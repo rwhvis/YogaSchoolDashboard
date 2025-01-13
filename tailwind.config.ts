@@ -13,6 +13,15 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      colors: {
+        yogaGreen: "#144E5A",
+        yogaLightGreen: "#144E5A85",
+        yogaYellow: "#FEF4E8",
+        yogaGray: "#707070",
+        yogaBlue: "#FBFCFF",
+        yogaBackgroundBlue: "#B5CED3",
+        yogaRed: "#FF0000"
+      }
     },
   },
   plugins: [],

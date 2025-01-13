@@ -1,87 +1,91 @@
+import Link from "next/link";
+import { BookOpen, BookOpenCheck, BookUser, CalendarDays, GraduationCap, Home, HomeIcon, House, LibraryBig, LogOut, Mail, School, ScrollText, Settings, ShieldPlus, TicketCheck, Users, UsersRound, Volume2 } from 'lucide-react';
+import { role } from "@/lib/data";
+
 const menuItems = [
   {
     title: "MENU",
     items: [
       {
-        icon: "/home.png",
+        icon: House,
         label: "Home",
         href: "/",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/teacher.png",
+        icon: GraduationCap,
         label: "Teachers",
         href: "/list/teachers",
         visible: ["admin", "teacher"],
       },
       {
-        icon: "/student.png",
+        icon: Users,
         label: "Students",
         href: "/list/students",
         visible: ["admin", "teacher"],
       },
       {
-        icon: "/parent.png",
+        icon: UsersRound,
         label: "Parents",
         href: "/list/parents",
         visible: ["admin", "teacher"],
       },
       {
-        icon: "/subject.png",
+        icon: LibraryBig,
         label: "Subjects",
         href: "/list/subjects",
         visible: ["admin"],
       },
       {
-        icon: "/class.png",
+        icon: School,
         label: "Classes",
         href: "/list/classes",
         visible: ["admin", "teacher"],
       },
       {
-        icon: "/lesson.png",
+        icon: BookOpen,
         label: "Lessons",
         href: "/list/lessons",
         visible: ["admin", "teacher"],
       },
       {
-        icon: "/exam.png",
+        icon: ScrollText,
         label: "Exams",
         href: "/list/exams",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/assignment.png",
+        icon: BookOpenCheck,
         label: "Assignments",
         href: "/list/assignments",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/result.png",
+        icon: ShieldPlus,
         label: "Results",
         href: "/list/results",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/attendance.png",
+        icon: TicketCheck,
         label: "Attendance",
         href: "/list/attendance",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/calendar.png",
+        icon: CalendarDays,
         label: "Events",
         href: "/list/events",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/message.png",
+        icon: Mail,
         label: "Messages",
         href: "/list/messages",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/announcement.png",
+        icon: Volume2,
         label: "Announcements",
         href: "/list/announcements",
         visible: ["admin", "teacher", "student", "parent"],
@@ -92,19 +96,19 @@ const menuItems = [
     title: "OTHER",
     items: [
       {
-        icon: "/profile.png",
+        icon: BookUser,
         label: "Profile",
         href: "/profile",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/setting.png",
+        icon: Settings,
         label: "Settings",
         href: "/settings",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/logout.png",
+        icon: LogOut,
         label: "Logout",
         href: "/logout",
         visible: ["admin", "teacher", "student", "parent"],
@@ -112,3 +116,42 @@ const menuItems = [
     ],
   },
 ];
+
+const Menu = () => {
+  return (
+    <div className='mt-4 text-sm'>
+      {menuItems.map(i => (
+        <div className='flex flex-col gap-2' key={i.title}>
+          <span className="hidden lg:block text-gray-400 font-light my-4 ">{i.title}</span>
+          
+          {i.items.map((item) => {
+            if (item.visible.includes(role)) {
+            return(
+              <Link
+                href={item.href}
+                key={item.label}
+                className={`flex items-center justify-center lg:justify-start gap-4 text-yogaGray py-2 md:px-2 rounded-md hover:bg-yogaYellow `}>
+                <item.icon size={20}/>
+                <span className="hidden lg:block">{item.label}</span>
+              </Link>    
+              );
+            }
+          })}
+          
+          {/* {i.items.map(item => (
+            <Link
+              href={item.href}
+              key={item.label}
+              className={`flex items-center justify-center lg:justify-start gap-4 text-yogaGray py-2 `}>
+              <item.icon size={20}/>
+              <span className="hidden lg:block">{item.label}</span>
+            </Link>
+          ))} */}
+        
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default Menu;

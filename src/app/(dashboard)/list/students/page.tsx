@@ -5,6 +5,7 @@ import Table from "@/components/Table";
 import { ArrowDown, ArrowDownRight, ArrowDownWideNarrow, Eye, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
 import { role, studentsData, teachersData } from "@/lib/data";
 import Link from "next/link";
+import FormModel from "@/components/FormModel";
 
 type Student = {
     id: number;
@@ -71,15 +72,16 @@ const StudentListPage = () => {
             <td className="hidden md:table-cell">{item.address}</td>
             <td>
                 <div className="flex items-center gap-2">
-                    <Link href={`/list/teachers/${item.id}`}>
+                    <Link href={`/list/students/${item.id}`}>
                         <button className="w-7 h-7 flex items-center justify-center rounded-full bg-yogaYellow text-yogaGreen">
                             <Eye size={16} />
                         </button>
                     </Link>
                     {role === "admin" && (
-                        <button className=" w-7 h-7 flex items-center justify-center rounded-full bg-yogaRed text-white">
-                            <Trash2 size={16} />
-                        </button>
+                        // <button className=" w-7 h-7 flex items-center justify-center rounded-full bg-yogaRed text-white">
+                        //     <Trash2 size={16} />
+                        // </button>
+                        <FormModel table="student" type="delete" id={item.id} />
                     )}
                 </div>
             </td>
@@ -100,9 +102,12 @@ const StudentListPage = () => {
                         <button className="w-8 h-8 flex items-center justify-center rounded-full bg-[#144E5A] text-white">
                             <ArrowDownWideNarrow size={14} />
                         </button>
-                        {role === "admin" && (<button className="w-8 h-8 flex items-center justify-center rounded-full bg-[#144E5A] text-white">
-                            <Plus size={14} />
-                        </button>)}
+                        {role === "admin" && (
+                        //     <button className="w-8 h-8 flex items-center justify-center rounded-full bg-[#144E5A] text-white">
+                        //          <Plus size={14} />
+                            //      </button>
+                            <FormModel table="student" type="create" />
+                        )}
                     </div>
                 </div>
             </div>

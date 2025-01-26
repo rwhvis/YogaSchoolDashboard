@@ -1,17 +1,15 @@
 import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
 import Table from "@/components/Table";
-import { ArrowDownWideNarrow, FilePen, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import { announcementsData, role } from "@/lib/data";
+import { ArrowDownWideNarrow, SlidersHorizontal,} from "lucide-react";
+import { role } from "@/lib/data";
 import Link from "next/link";
 import FormModel from "@/components/FormModel";
+import { Announcement, Class, Prisma } from "@prisma/client";
+import prisma from "@/lib/prisma";
+import { DATE_FORMAT, ITEM_PER_PAGE } from "@/lib/settings";
 
-type Announcement = {
-    id: number;
-    title: string;
-    class: string;
-    date: string;
-}
+type AnnouncementList = Announcement & { class: Class }
 
 const columns = [
     {
@@ -33,22 +31,60 @@ const columns = [
     }
 ]
 
-const AnnouncementsListPage = () => {
+const renderRow = (item: AnnouncementList) => (
+    <tr key={item.id} className="border-b border-yogaGreen border-opacity-70 even:bg-yogaBlue even:bg-opacity-90 text-sm hover:bg-yogaYellow hover:bg-opacity-1">
+        <td className="flex items-center gap-4 p-2">{item.title}</td>
+        <td className="">{item.class.name}</td>
+        <td className="hidden md:table-cell">{new Intl.DateTimeFormat("DATE_FORMAT").format(item.date)}</td>
+        <td>
+            <div className="flex items-center gap-2">
+                {role === "admin" && (
+                    <FormModel table={"announcement"} type={"delete"} id={item.id} />
+                )}
+            </div>
+        </td>
+    </tr>
+);
 
-    const renderRow = (item: Announcement) => (
-        <tr key={item.id} className="border-b border-yogaGreen border-opacity-70 even:bg-yogaBlue even:bg-opacity-90 text-sm hover:bg-yogaYellow hover:bg-opacity-1">
-            <td className="flex items-center gap-4 p-2">{item.title}</td>
-            <td className="">{item.class}</td>
-            <td className="hidden md:table-cell">{item.date}</td>
-            <td>
-                <div className="flex items-center gap-2">
-                    {role === "admin" && (
-                        <FormModel table={"announcement"} type={"delete"} id={item.id} />
-                    )}
-                </div>
-            </td>
-        </tr>
-    );
+const AnnouncementsListPage = async ({
+    searchParams,
+}: {
+    searchParams: { [key: string]: string | undefined };
+}) => {
+    const { page, ...queryParams } = searchParams;
+
+    const p = page ? parseInt(page) : 1;
+
+    // URL PARAMS CONDITIONS
+
+    const query: Prisma.AnnouncementWhereInput = {};
+
+    if (queryParams) {
+        for (const [key, value] of Object.entries(queryParams)) {
+            if (value !== undefined) {       
+                switch (key){
+                    case "search":
+                        query.title = { contains: value, mode: "insensitive" }
+                        break;
+                    default:
+                        break;
+                } 
+            }
+        }
+    }
+
+    const [data, count] = await prisma.$transaction([
+        prisma.announcement.findMany({
+            where: query,
+            include: {
+                class: true,
+            },
+            take: ITEM_PER_PAGE,
+            skip: ITEM_PER_PAGE * (p - 1),
+    }),
+        prisma.announcement.count({where:query}),
+    ]);
+
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
@@ -71,9 +107,9 @@ const AnnouncementsListPage = () => {
                 </div>
             </div>
             {/* LIST */}
-            <Table columns={columns} renderRow={renderRow} data={announcementsData} />
+            <Table columns={columns} renderRow={renderRow} data={data} />
             {/* PAGINATION */}
-            <Pagination />
+            <Pagination page={p} count={count} />
             
         </div>
     )

@@ -6,16 +6,11 @@ import { ArrowDownWideNarrow, FilePen, Plus, SlidersHorizontal, Trash2 } from "l
 import { parentsData, role, } from "@/lib/data";
 import Link from "next/link";
 import FormModel from "@/components/FormModel";
+import { Parent, Prisma, Student } from "@prisma/client";
+import prisma from "@/lib/prisma";
+import { ITEM_PER_PAGE } from "@/lib/settings";
 
-type Parent = {
-    id: number;
-    parentId: string;
-    name: string;
-    email?: string;
-    students: string[];
-    phone: string;
-    address: string;
-}
+type ParentList = Parent & { students: Student[] };
 
 const columns = [
     {
@@ -43,31 +38,68 @@ const columns = [
     }
 ]
 
-const ParentsListPage = () => {
+const renderRow = (item: ParentList) => (
+    <tr key={item.id} className="border-b border-yogaGreen border-opacity-70 even:bg-yogaBlue even:bg-opacity-90 text-sm hover:bg-yogaYellow hover:bg-opacity-1">
+        <td className="flex items-center gap-4 p-2">
+            <div className="flex flex-col">
+                <h3 className="font-semibold">{item.name}</h3>
+                <p className="font-xs text-yogaGray">{item.email}</p>
+            </div>
+        </td>
+        <td className="hidden md:table-cell">{item.students.map(student=>student.name).join(", ")}</td>
+        <td className="hidden md:table-cell">{item?.phone}</td>
+        <td className="hidden md:table-cell">{item.address}</td>
+        <td>
+            <div className="flex items-center gap-2">
+                {role === "admin" && (
+                    <>
+                        <FormModel table="parent" type="update" data={item} />
+                        <FormModel table="parent" type="delete" id={item.id} />
+                    </>
+                )}
+            </div>
+        </td>
+    </tr>
+);
 
-    const renderRow = (item: Parent) => (
-        <tr key={item.id} className="border-b border-yogaGreen border-opacity-70 even:bg-yogaBlue even:bg-opacity-90 text-sm hover:bg-yogaYellow hover:bg-opacity-1">
-            <td className="flex items-center gap-4 p-2">
-                <div className="flex flex-col">
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="font-xs text-yogaGray">{item.email}</p>
-                </div>
-            </td>
-            <td className="hidden md:table-cell">{item.students.join(", ")}</td>
-            <td className="hidden md:table-cell">{item?.phone}</td>
-            <td className="hidden md:table-cell">{item.address}</td>
-            <td>
-                <div className="flex items-center gap-2">
-                    {role === "admin" && (
-                        <>
-                            <FormModel table="parent" type="update" data={item} />
-                            <FormModel table="parent" type="delete" id={item.id} />
-                        </>
-                    )}
-                </div>
-            </td>
-        </tr>
-    );
+const ParentsListPage = async({
+ searchParams,
+} : {
+    searchParams: { [key: string]: string | undefined };
+}) => {
+    const { page, ...queryParams } = searchParams;
+
+    const p = page ? parseInt(page) : 1;
+
+    // URL PARAMS CONDITIONS
+
+    const query: Prisma.ParentWhereInput = {};
+
+    if (queryParams) {
+        for (const [key, value] of Object.entries(queryParams)) {
+            if (value !== undefined) {       
+                switch (key){
+                    case "search":
+                        query.name = { contains: value, mode: "insensitive" };
+                        break;
+                    default:
+                        break;
+                } 
+            }
+        }
+    }
+ 
+    const [data, count] = await prisma.$transaction([
+        prisma.parent.findMany({
+            where: query,
+            include: {
+                students: true,
+            },
+            take: ITEM_PER_PAGE,
+            skip: ITEM_PER_PAGE * (p - 1),
+    }),
+        prisma.parent.count({where:query}),
+    ]);
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
@@ -90,9 +122,9 @@ const ParentsListPage = () => {
                 </div>
             </div>
             {/* LIST */}
-            <Table columns={columns} renderRow={renderRow} data={parentsData} />
+            <Table columns={columns} renderRow={renderRow} data={data} />
             {/* PAGINATION */}
-            <Pagination />
+            <Pagination page={p} count={count} />
             
         </div>
     )

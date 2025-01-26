@@ -112,11 +112,11 @@ const SingleTeacherPage = () => {
                 <div className="bg-white p-4 rounded-md ">
                     <h1 className="text-xl text-semibold">Shortcuts</h1>
                     <div className="mt-4 flex gap-4 flex-wrap text-xs text-yogaGray">
-                        <Link className="p-3 rounded-md bg-yogaYellow" href="/"> Teacher's Classes</Link>
-                        <Link className="p-3 rounded-md bg-yogaYellow" href="/"> Teacher's Students</Link>
-                        <Link className="p-3 rounded-md bg-yogaYellow" href="/"> Teacher's Lessons</Link>
-                        <Link className="p-3 rounded-md bg-yogaYellow" href="/"> Teacher's Exams</Link>
-                        <Link className="p-3 rounded-md bg-yogaYellow" href="/"> Teacher's Addignments</Link>
+                        <Link className="p-3 rounded-md bg-yogaYellow" href={`/list/classes?supervisorId=${"teacher2"}`}>Teacher's Classes</Link>
+                        <Link className="p-3 rounded-md bg-yogaYellow" href={ `/list/students?teacherId=${"teacher2"}`}>Teacher's Students</Link>
+                        <Link className="p-3 rounded-md bg-yogaYellow" href={`/list/lessons?teacherId=${"teacher2"}`}>Teacher's Lessons</Link>
+                        <Link className="p-3 rounded-md bg-yogaYellow" href={`/list/exams?teacherId=${"teacher2"}`}>Teacher's Exams</Link>
+                        <Link className="p-3 rounded-md bg-yogaYellow" href={`/list/assignments?teacherId=${"teacher2"}`}>Teacher's Addignments</Link>
                     </div>
                 </div>
                 <Performance />

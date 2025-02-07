@@ -1,15 +1,13 @@
-import Image from "next/image";
-import Pagination from "@/components/Pagination";
-import TableSearch from "@/components/TableSearch";
-import Table from "@/components/Table";
-import { ArrowDownWideNarrow, FilePen, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import { examsData, role } from "@/lib/data";
-import Link from "next/link";
 import FormModel from "@/components/FormModel";
-import { Class, Exam, Prisma, Subject, Teacher } from "@prisma/client";
-import { count } from "console";
+import Pagination from "@/components/Pagination";
+import Table from "@/components/Table";
+import TableSearch from "@/components/TableSearch";
+import { role } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 import { DATE_FORMAT, ITEM_PER_PAGE } from "@/lib/settings";
+import { currentUserId } from "@/lib/utils";
+import { Class, Exam, Prisma, Subject, Teacher } from "@prisma/client";
+import { ArrowDownWideNarrow, SlidersHorizontal } from "lucide-react";
 
 type ExamList = Exam & {lesson:{
     subject: Subject;
@@ -37,10 +35,10 @@ const columns = [
         accessor: "date",
         className: "hidden md:table-cell",
     },
-    {
+    ...( role === "admin" || role === "teacher" ? [{
         header: "Actions",
         accessor: "actions"
-    }
+    }] : []),
 ]
 
 const renderRow = (item: ExamList) => (
@@ -51,7 +49,7 @@ const renderRow = (item: ExamList) => (
         <td className="hidden md:table-cell">{new Intl.DateTimeFormat(DATE_FORMAT).format(item.startTime)}</td>
         <td>
             <div className="flex items-center gap-2">
-                {role === "admin" && (
+                {(role === "admin" || role === "teacher") && (
                     <>
                         <FormModel table={"exam"} type={"update"} data={item} />
                         <FormModel table={"exam"} type={"delete"} id={item.id} />
@@ -75,28 +73,57 @@ const ExamsListPage = async ( {
 
     const query: Prisma.ExamWhereInput = {};
 
+    query.lesson = {};
+
     if (queryParams) {
         for (const [key, value] of Object.entries(queryParams)) {
             if (value !== undefined) {       
                 switch (key){
                     case "classId":
-                        query.lesson = { classId : parseInt(value)}
+                        query.lesson.classId = parseInt(value);
                         break;
                     case "teacherId":
-                        query.lesson = {teacherId : value}
+                        query.lesson.teacherId = value;
                         break;
                     case "search":
-                        query.lesson = {
-                            subject: {
-                                name: { contains: value, mode: "insensitive" }
-                            }
-                        }
+                        query.lesson.subject = { name: { contains: value, mode: "insensitive" } };
                         break;
                     default:
                         break;
                 } 
             }
         }
+    }
+
+    // ROLE CONDISTIONS
+    
+    switch (role) {
+        case "admin":
+            break;
+        case "teacher":
+            query.lesson.teacherId = currentUserId!;
+            break;
+        case "student":
+            query.lesson.class = {
+                students: {
+                    some: {
+                        id: currentUserId!,
+                    },
+                },
+            };
+            break;
+        case "parent":
+            query.lesson.class = {
+                students: {
+                    some: {
+                        parentId: currentUserId,
+                    },
+                },
+            };
+            break;
+    
+        default:
+            break;
     }
 
  
@@ -132,7 +159,7 @@ const ExamsListPage = async ( {
                         <button className="w-8 h-8 flex items-center justify-center rounded-full bg-[#144E5A] text-white">
                             <ArrowDownWideNarrow size={14} />
                         </button>
-                        {role === "admin" && (
+                        {(role === "admin" || role === "teacher") && (
                             <FormModel table={"exam"} type={"create"} />
                         )}
                     </div>

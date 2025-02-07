@@ -3,12 +3,12 @@ import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
 import Table from "@/components/Table";
 import { ArrowDownWideNarrow, Eye, SlidersHorizontal } from "lucide-react";
-import { role,} from "@/lib/data";
 import Link from "next/link";
 import FormModel from "@/components/FormModel";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { role } from "@/lib/utils";
 
 
 
@@ -44,10 +44,10 @@ const columns = [
         accessor: "address",
         className: "hidden lg:table-cell",
     },
-    {
+    ...(role === "admin" ? [{
         header: "Actions",
         accessor: "actions"
-    }
+    }] : [] ),
 ]
 
 const renderRow = (item: TeacherList) => (

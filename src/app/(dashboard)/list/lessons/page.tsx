@@ -1,14 +1,13 @@
-import Image from "next/image";
 import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
 import Table from "@/components/Table";
-import { ArrowDownWideNarrow, FilePen, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import { lessonsData, role, } from "@/lib/data";
-import Link from "next/link";
+import { ArrowDownWideNarrow, SlidersHorizontal } from "lucide-react";
 import FormModel from "@/components/FormModel";
 import { Class, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { role } from "@/lib/utils";
+
 
 type LessonList = Lesson & {subject:Subject} &{class:Class} &{teacher:Teacher}
 
@@ -26,10 +25,10 @@ const columns = [
         accessor: "teacher",
         className: "hidden md:table-cell",
     },
-    {
+    ...(role === "admin" ? [{
         header: "Actions",
         accessor: "actions"
-    }
+    }] : []),
 ]
 
 const renderRow = (item: LessonList) => (

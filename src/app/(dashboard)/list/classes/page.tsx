@@ -2,12 +2,12 @@ import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
 import Table from "@/components/Table";
 import { ArrowDownWideNarrow, FilePen, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import { classesData, role } from "@/lib/data";
 import Link from "next/link";
 import FormModel from "@/components/FormModel";
 import { Class, Prisma, Teacher } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { role } from "@/lib/utils";
 
 type ClassList = Class & { supervisor: Teacher };
 
@@ -30,10 +30,10 @@ const columns = [
         accessor: "supervisor",
         className: "hidden lg:table-cell",
     },
-    {
+    ...(role === "admin" ? [{
         header: "Actions",
         accessor: "actions",
-    }
+    }] : []),
 ]
 
 const renderRow = (item: ClassList) => (

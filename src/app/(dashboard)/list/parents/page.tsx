@@ -1,14 +1,12 @@
-import Image from "next/image";
 import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
 import Table from "@/components/Table";
-import { ArrowDownWideNarrow, FilePen, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import { parentsData, role, } from "@/lib/data";
-import Link from "next/link";
+import { ArrowDownWideNarrow, SlidersHorizontal } from "lucide-react";
 import FormModel from "@/components/FormModel";
 import { Parent, Prisma, Student } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { role } from "@/lib/utils";
 
 type ParentList = Parent & { students: Student[] };
 
@@ -32,10 +30,10 @@ const columns = [
         accessor: "address",
         className: "hidden lg:table-cell",
     },
-    {
+    ...(role === "admin" ? [{
         header: "Actions",
         accessor: "actions"
-    }
+    }] : []),
 ]
 
 const renderRow = (item: ParentList) => (

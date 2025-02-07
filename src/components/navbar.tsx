@@ -1,7 +1,12 @@
+import { UserButton } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import { MessageCircleMore, Search, Volume2 } from "lucide-react";
 import Image from "next/image";
 
-const navBar = () => { 
+const navBar = async () => {
+
+    const user = await currentUser();
+
     return (
         <div className="flex items-center justify-between p-4">
             {/* SEARCH BAR */}
@@ -20,9 +25,12 @@ const navBar = () => {
                 </div>
                 <div className="flex flex-col">
                     <span className="text-xs leading-3 font-medium">Rutger Visscher</span>
-                    <span className="text-[10px] text-gray-500 text-right">Administrator</span>
+                    <span className="text-[10px] text-gray-500 text-right">
+                        {user?.publicMetadata.role as string}
+                    </span>
                 </div>
-                <Image src="/avatar.png" alt="avatar" width={32} height={32} className="rounded-full" />
+                {/* <Image src="/avatar.png" alt="avatar" width={32} height={32} className="rounded-full" /> */}
+                <UserButton />
             </div>
         </div>
     )

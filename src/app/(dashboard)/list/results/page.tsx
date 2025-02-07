@@ -1,14 +1,12 @@
-import Image from "next/image";
 import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
 import Table from "@/components/Table";
-import { ArrowDown, ArrowDownRight, ArrowDownWideNarrow, FilePen, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import { resultsData, role, } from "@/lib/data";
-import Link from "next/link";
+import { ArrowDownWideNarrow, SlidersHorizontal } from "lucide-react";
 import FormModel from "@/components/FormModel";
 import { DATE_FORMAT, ITEM_PER_PAGE } from "@/lib/settings";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { currentUserId, role } from "@/lib/utils";
 
 type ResultList = {
     id: number;
@@ -51,10 +49,10 @@ const columns = [
         accessor: "date",
         className: "hidden lg:table-cell",
     },
-    {
+    ...(role === "admin" || role === "teacher" ? [{
         header: "Actions",
         accessor: "actions"
-    }
+    }] : []),
 ]
 
 const renderRow = (item: ResultList) => (
@@ -108,6 +106,30 @@ const ResultsListPage = async ({
                 }
             }
         }
+    }
+
+    // ROLE CONDITIONS
+
+    switch (role) {
+        case "admin":
+            break;
+        case "teacher":
+            query.OR = [
+                { exam: { lesson: { teacherId: currentUserId } } },
+                { assignment: { lesson: { teacherId: currentUserId } } },
+            ]
+            break;
+        case "student":
+            query.studentId = currentUserId!; 
+            break;
+        case "parent":
+            query.student = {
+                parentId: currentUserId!,
+            };
+            break;
+    
+        default:
+            break;
     }
 
  
@@ -176,7 +198,7 @@ const ResultsListPage = async ({
                         <button className="w-8 h-8 flex items-center justify-center rounded-full bg-[#144E5A] text-white">
                             <ArrowDownWideNarrow size={14} />
                         </button>
-                        {role === "admin" && (
+                        {(role === "admin" || role === "teacher") && (
                            <FormModel table={"result"} type={"create"} />
                         )}
                     </div>

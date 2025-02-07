@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BookOpen, BookOpenCheck, BookUser, CalendarDays, GraduationCap, Home, HomeIcon, House, LibraryBig, LogOut, Mail, School, ScrollText, Settings, ShieldPlus, TicketCheck, Users, UsersRound, Volume2 } from 'lucide-react';
-import { role } from "@/lib/data";
+import { currentUser } from "@clerk/nextjs/server";
 
 const menuItems = [
   {
@@ -117,7 +117,11 @@ const menuItems = [
   },
 ];
 
-const Menu = () => {
+const Menu = async () => {
+
+  const user = await currentUser();
+  const role = user?.publicMetadata.role as string;
+  
   return (
     <div className='mt-4 text-sm'>
       {menuItems.map(i => (

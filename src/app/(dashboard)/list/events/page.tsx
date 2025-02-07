@@ -1,14 +1,13 @@
-import Image from "next/image";
 import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
 import Table from "@/components/Table";
 import { ArrowDownWideNarrow,  SlidersHorizontal } from "lucide-react";
-import { role, } from "@/lib/data";
-import Link from "next/link";
 import FormModel from "@/components/FormModel";
 import { Class, Event, Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { ITEM_PER_PAGE } from "@/lib/settings";
+import { DATE_FORMAT, ITEM_PER_PAGE } from "@/lib/settings";
+import { role } from "@/lib/data";
+import { currentUserId } from "@/lib/utils";
 
 type EventList = Event & { class: Class };
 
@@ -36,23 +35,23 @@ const columns = [
         accessor: "endTime",
         className: "hidden lg:table-cell",
     },
-    {
+    ...(role === "admin" ? [{
         header: "Actions",
         accessor: "actions"
-    }
+    }] : []),
 ]
 
     const renderRow = (item: EventList) => (
         <tr key={item.id} className="border-b border-yogaGreen border-opacity-70 even:bg-yogaBlue even:bg-opacity-90 text-sm hover:bg-yogaYellow hover:bg-opacity-1">
             <td className="flex items-center gap-4 p-2">{item.title}</td>
-            <td className="">{item.class.name}</td>
-            <td className="hidden md:table-cell">{new Intl.DateTimeFormat("DATE_FORMAT").format(item.startTime )}</td>
-            <td className="hidden md:table-cell">{item.startTime.toLocaleTimeString("DATE_FORMAT", {
+            <td className="">{item.class?.name || "-"}</td>
+            <td className="hidden md:table-cell">{new Intl.DateTimeFormat(DATE_FORMAT).format(item.startTime )}</td>
+            <td className="hidden md:table-cell">{item.startTime.toLocaleTimeString(DATE_FORMAT, {
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: false,
             })} </td>
-            <td className="hidden md:table-cell">{item.endTime.toLocaleTimeString("DATE_FORMAT", {
+            <td className="hidden md:table-cell">{item.endTime.toLocaleTimeString(DATE_FORMAT, {
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: false,
@@ -96,6 +95,19 @@ const EventsListPage = async ({
             }
         }
     }
+
+    // ROLE CONDITIONS
+
+    const roleConditions = {
+        teacher: { lessons : { some : { teacherId : currentUserId! } } },
+        student: { students : { some : { id:currentUserId! } } },
+        parent: { students : { some : { parentId : currentUserId! } } },
+    }
+
+    query.OR = [
+        { classId : null },
+        { class: roleConditions[role as keyof typeof roleConditions] || {},
+    }];
 
     const [data, count] = await prisma.$transaction([
         prisma.event.findMany({

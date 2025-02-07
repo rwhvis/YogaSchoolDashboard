@@ -2,12 +2,11 @@ import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
 import Table from "@/components/Table";
 import { ArrowDownWideNarrow, SlidersHorizontal,} from "lucide-react";
-import { role } from "@/lib/data";
-import Link from "next/link";
 import FormModel from "@/components/FormModel";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { DATE_FORMAT, ITEM_PER_PAGE } from "@/lib/settings";
+import { currentUserId, role } from "@/lib/utils";
 
 type AnnouncementList = Announcement & { class: Class }
 
@@ -25,17 +24,17 @@ const columns = [
         accessor: "date",
         className: "hidden md:table-cell",
     },
-    {
+    ...(role=== "admin" ? [ {
         header: "Actions",
         accessor: "actions"
-    }
+    }] : []),
 ]
 
 const renderRow = (item: AnnouncementList) => (
     <tr key={item.id} className="border-b border-yogaGreen border-opacity-70 even:bg-yogaBlue even:bg-opacity-90 text-sm hover:bg-yogaYellow hover:bg-opacity-1">
         <td className="flex items-center gap-4 p-2">{item.title}</td>
-        <td className="">{item.class.name}</td>
-        <td className="hidden md:table-cell">{new Intl.DateTimeFormat("DATE_FORMAT").format(item.date)}</td>
+        <td className="">{item.class?.name || "-"}</td>
+        <td className="hidden md:table-cell">{new Intl.DateTimeFormat(DATE_FORMAT).format(item.date)}</td>
         <td>
             <div className="flex items-center gap-2">
                 {role === "admin" && (
@@ -72,6 +71,19 @@ const AnnouncementsListPage = async ({
             }
         }
     }
+
+    // ROLE CONDITIONS
+    
+        const roleConditions = {
+            teacher: { lessons : { some : { teacherId : currentUserId } } },
+            student: { students : { some : { id:currentUserId! } } },
+            parent: { students : { some : { parentId : currentUserId! } } },
+        }
+    
+        query.OR = [
+            { classId : null },
+            { class: roleConditions[role as keyof typeof roleConditions] || {},
+        }];
 
     const [data, count] = await prisma.$transaction([
         prisma.announcement.findMany({
